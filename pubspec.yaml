@@ -12,6 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
 
+  rxdart: ^0.26.0
 
   cupertino_icons: ^1.0.2
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rxdart/rxdart.dart';
 
 void main() {
   runApp(MyApp());
@@ -28,12 +29,20 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-    int _counter = 0;
+    late CounterModel _counter;
 
-    void _incrementCounter() {
-        setState(() {
-            _counter++;
-        });
+    @override
+    void initState() {
+        _counter = CounterModel();
+
+        super.initState();
+    }
+
+    @override
+    void dispose() {
+        _counter.dispose();
+
+        super.dispose();
     }
 
     @override
@@ -47,20 +56,51 @@ class _MyHomePageState extends State<MyHomePage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                         Text(
-                            'You have pushed the button this many times:',
+                            'Você clicou no botão: ',
                         ),
-                        Text(
-                            '$_counter',
-                            style: Theme.of(context).textTheme.headline4,
+                        StreamBuilder<int>(
+                            stream: _counter.stream,
+                            builder: (context, snapshot) {
+                                return Text(
+                                    '${snapshot.data} vezes',
+                                    style: Theme.of(context).textTheme.headline4,
+                                );
+                            },
                         ),
                     ],
                 ),
             ),
             floatingActionButton: FloatingActionButton(
-                onPressed: _incrementCounter,
-                tooltip: 'Increment',
+                onPressed: () => _counter.increase(),
+                tooltip: 'Aumentar',
                 child: Icon(Icons.add),
             ),
         );
+    }
+}
+
+class CounterModel extends ChangeNotifier {
+    /// Controlador do fluxo do tipo int que inicia com 0
+    final count = BehaviorSubject<int>.seeded(0);
+
+    /// Saída de dados
+    Stream<int> get stream => count.stream;
+
+    /// Entrada de dados
+    // Sink<int> get entrada => count.sink;
+
+    /// Getter que retorna o valor atual
+    int get value => count.value!;
+
+    /// Função que aumenta o contador
+    void increase() {
+        count.sink.add(value + 1);
+    }
+
+    /// Fechando o controller
+    @override
+    void dispose() {
+        count.close();
+        super.dispose();
     }
 }
